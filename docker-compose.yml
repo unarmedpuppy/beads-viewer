@@ -1,62 +1,9 @@
-x-enabled: true
+# Local development docker-compose
+# For production deployment, see the home-server repo
 
 services:
-  beads-ui:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    image: beads-ui:local
-    container_name: beads-ui
-    restart: unless-stopped
-    environment:
-      - TZ=America/Chicago
-      - PORT=3000
-      - HOST=0.0.0.0
-      - BEADS_NO_DAEMON=1
+  beads-viewer:
+    build: .
+    container_name: beads-viewer
     ports:
-      - "3015:3000"
-    volumes:
-      # Mount only JSONL source of truth - container builds its own database
-      # This avoids version/migration conflicts with host's bd binary
-      - /home/unarmedpuppy/server/.beads/issues.jsonl:/app/.beads/issues.jsonl:ro
-      - /home/unarmedpuppy/server/.beads/config.yaml:/app/.beads/config.yaml:ro
-      # metadata.json needs to be writable for bd migrate to work properly
-      - /home/unarmedpuppy/server/.beads/metadata.json:/app/.beads/metadata.json
-    working_dir: /app
-    networks:
-      - my-network
-    labels:
-      # Traefik configuration
-      - "traefik.enable=true"
-      # HTTP to HTTPS redirect
-      - "traefik.http.routers.beads-ui-http.rule=Host(`beads.server.unarmedpuppy.com`)"
-      - "traefik.http.routers.beads-ui-http.entrypoints=web"
-      - "traefik.http.routers.beads-ui-http.middlewares=redirect-to-https"
-      # Local network access (no auth) - highest priority
-      - "traefik.http.routers.beads-ui-local.rule=Host(`beads.server.unarmedpuppy.com`) && ClientIP(`192.168.86.0/24`)"
-      - "traefik.http.routers.beads-ui-local.priority=100"
-      - "traefik.http.routers.beads-ui-local.entrypoints=websecure"
-      - "traefik.http.routers.beads-ui-local.tls.certresolver=myresolver"
-      - "traefik.http.routers.beads-ui-local.service=beads-ui"
-      # External access (requires auth) - lowest priority
-      - "traefik.http.routers.beads-ui.rule=Host(`beads.server.unarmedpuppy.com`)"
-      - "traefik.http.routers.beads-ui.priority=1"
-      - "traefik.http.routers.beads-ui.entrypoints=websecure"
-      - "traefik.http.routers.beads-ui.tls.certresolver=myresolver"
-      - "traefik.http.routers.beads-ui.tls=true"
-      - "traefik.http.routers.beads-ui.middlewares=beads-ui-auth"
-      - "traefik.http.routers.beads-ui.service=beads-ui"
-      # Service and auth middleware
-      - "traefik.http.services.beads-ui.loadbalancer.server.port=3000"
-      - "traefik.http.middlewares.beads-ui-auth.basicauth.users=unarmedpuppy:$$apr1$$yE.A6vVX$$p7.fpGKw5Unp0UW6H/2c.0"
-      - "traefik.http.middlewares.beads-ui-auth.basicauth.realm=beads-ui"
-      # Homepage integration
-      - "homepage.group=Productivity"
-      - "homepage.name=Beads UI"
-      - "homepage.icon=si-task"
-      - "homepage.href=https://beads.server.unarmedpuppy.com"
-      - "homepage.description=Web interface for Beads issue tracker"
-
-networks:
-  my-network:
-    external: true
+      - "8080:80"
