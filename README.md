@@ -38,4 +38,4 @@ This was the original standalone web interface for the Beads issue tracker (`bd`
 ## References
 
 - [homelab-ai Dashboard](../homelab-ai/dashboard/) - New location
-- [Beads CLI Reference](../home-server/agents/reference/beads.md)
+- [Beads CLI Reference](../home-server/.agents/reference/beads.md)
